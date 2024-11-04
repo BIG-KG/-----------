@@ -14,12 +14,13 @@
 static int find_space(dbl_linked_list_t *list);
 static int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list);
 
-
 int main()
 {
     printf("start\n");
     dbl_linked_list_t test_list;
     list_inicialisator (&test_list);
+    dump (test_list);
+
     add_after (-1, 256, &test_list);
 
     printf( "next %d    prev %d\n", test_list.nextArray[1], test_list.prevArray[1] );
@@ -34,6 +35,11 @@ int main()
 
     add_before (-1, 32, &test_list);
     add_after  (-1, 16, &test_list);
+    printf("\n\n\n");
+    dump (test_list);
+    list_delete_element(4, &test_list);
+    dump (test_list);
+    add_before (-1, 8, &test_list);
     dump (test_list);
 
     //add_before (-1, 64, &test_list);
@@ -59,13 +65,12 @@ int list_inicialisator (dbl_linked_list_t *list)
         printf ("ERROR: list is already initialized.");
         return DOUBLE_INICIALISE_LIST;
     }
-
     list->initialisated = true;
 
 
                       /*The zeroth element is not filled, so the required size is one larger.*/
     int64_t* tmprPntr0 = (int64_t *)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int64_t) );
-    if (tmprPntr0 == NULL)
+    if (tmprPntr0     == NULL)
     {
         printf("ERROR: no space in RAM to make new list.");
         return NO_RAM_SPACE;
@@ -98,7 +103,8 @@ int list_inicialisator (dbl_linked_list_t *list)
     list->prevArray = tmprPntr1;
 
     list->capacity  = DATA_ARRAY_BASE_SIZE;
-    set_next_free_markers (0, DATA_ARRAY_BASE_SIZE, list);
+    set_next_free_markers (1, DATA_ARRAY_BASE_SIZE, list);
+    list->firstFreeCell = 1;
 
     return 0;
 }
@@ -149,7 +155,7 @@ int add_after (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *list
     if (targetNum_Users + 1> list->numOfElm)
     {
         printf("ERROR: too large num argument in funck add_after\n");
-        return 121231;  //Обязательно заменить на enum
+        return -121231;  //Обязательно заменить на enum
     }
 
 
@@ -161,13 +167,13 @@ int add_after (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *list
     nexttargNum = list->nextArray[targetNum];
 
     freeSp = find_space(list);
-    if (freeSp == 0)
+    if (freeSp < 0)
     {
-        // increase_space(list);
-        ;
+        printf("ERROR: no ram space\n");
+        return NO_RAM_SPACE;
     }
 
-     list->nextArray[targetNum]   = freeSp;
+    list->nextArray[targetNum]   = freeSp;
     list->prevArray[freeSp]      = targetNum;
     list->prevArray[nexttargNum] = freeSp;
     list->nextArray[freeSp]      = nexttargNum;
@@ -206,11 +212,12 @@ int add_before (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *lis
     prevTargNum = list->prevArray[targetNum];
 
     freeSp = find_space(list);
-    if (freeSp == 0)
+    if (freeSp < 0)
     {
-        // increase_space(list);
-        ;
+        printf("ERROR: no ram space\n");
+        return NO_RAM_SPACE;
     }
+
 
     list->nextArray[prevTargNum] = freeSp;
     list->prevArray[freeSp]      = prevTargNum;
@@ -269,13 +276,38 @@ int CHECK_LIST (dbl_linked_list_t *list, const char *const funckName)
         Before use, check list with: "CHECK_LIST(list, ...)" */
 int find_space(dbl_linked_list_t *list)
 {
-    int free = 1;
-    while (  ( (list->nextArray[free] != 0) && (list->prevArray[free] != 0) )            ||
-                       ( (list->nextArray[0] == free) || (list->prevArray[0] == free) )      )
+    if (list->firstFreeCell == LIST_FULL)
     {
-        free ++;
+        int newCapacity = list->capacity * ARRAY_INCREASE_STEP;
+
+                        /*The zeroth element is not filled, so the required size is one larger.*/
+        int64_t *tmprPntr0 = (int64_t *)realloc (list->dataArray,
+                                                    (newCapacity + 1) * sizeof(int64_t) );
+        int     *tmprPntr1 = (int     *)realloc (list->nextArray,
+                                                    (newCapacity + 1) * sizeof(int    ) );
+        int     *tmprPntr2 = (int     *)realloc (list->prevArray,
+                                                    (newCapacity + 1) * sizeof(int    ) );
+
+        if (tmprPntr0 == NULL || tmprPntr1 == NULL || tmprPntr2 == NULL)
+        {
+            if (tmprPntr0 != NULL) free(tmprPntr0);
+            if (tmprPntr1 != NULL) free(tmprPntr1);
+            if (tmprPntr2 != NULL) free(tmprPntr2);
+
+            return NO_RAM_SPACE;
+        }
+
+        list->dataArray = tmprPntr0;
+        list->nextArray = tmprPntr1;
+        list->prevArray = tmprPntr2;
+
+        set_next_free_markers(list->capacity, newCapacity, list);
+        list->firstFreeCell = list->capacity;
+        list->capacity = newCapacity;
     }
 
+    int free = list->firstFreeCell;
+    list->firstFreeCell = list->nextArray[free];
     return free;
 }
 
@@ -337,12 +369,13 @@ int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
 
     if (targetNum_Users + 1> list->numOfElm)
     {
-        printf("ERROR: too large num argument in funck look\n");
+        printf("ERROR: too large num argument in funck add_after\n");
+        return -121231;  //Обязательно заменить на enum
     }
 
     for (int i = 0; i < targetNum_Users + 1; i ++)
     {
-        targetNum = list->nextArray[targetNum];
+       targetNum = list->nextArray[targetNum];
     }
 
     list->dataArray[targetNum] = 0;
@@ -354,6 +387,9 @@ int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
     list->prevArray[targetNum] = 0;
     list->nextArray[targetNum] = 0;
 
+    list->nextArray[targetNum] = list->firstFreeCell;
+    list->firstFreeCell = targetNum;
+
     return list->dataArray[targetNum];
 }
 
@@ -362,7 +398,6 @@ int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
         Before use, check list with: "CHECK_LIST(list, ...)" */
 int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list)
 {
-
     for(int i = startNum; i < endNum - 1; i ++)
     {
         list->nextArray[i] = (i + 1);
