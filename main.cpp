@@ -407,3 +407,23 @@ int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list)
 
     return 1;
 }
+
+int64_t* list_get_ptr (int targetNum_Users, dbl_linked_list_t *list)
+{
+    int right_list = 0;
+    int targetNum  = 0;
+
+    if (  (  right_list = CHECK_LIST(list, "list_look")  )  )  return right_list;
+
+    if (targetNum_Users + 1> list->numOfElm)
+    {
+        printf("ERROR: too large num argument in funck look\n");
+    }
+
+    for (int i = 0; i < targetNum_Users + 1; i ++)
+    {
+        targetNum = list->nextArray[targetNum];
+    }
+
+    return &list->dataArray[targetNum];
+}
