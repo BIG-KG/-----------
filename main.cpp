@@ -1,24 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <stdint.h>
 
-#include "dbl_linked_list_funcs.h"
 #include "dbl_linked_list_const.h"
+#include "dbl_linked_list_funcs.h"
 
 
-struct dbl_linked_list_t
-{
-    bool     initialisated  = false;
-    int      numOfElm       = 0;
-    int64_t *dataArray      = NULL;
-    int     *nextArray      = NULL;
-    int     *prevArray      = NULL;
-    int      capacity       = 0;
-}
-/* !!!! ATTENTION: This function does not check the correctness of the list data. !!!!
-        This function is only for internal use.
+
+/* !!!! ATTENTION: This functions does not check the correctness of the list data. !!!!
+        This functions is only for internal use.
         Before use, check list with: "CHECK_LIST(list, ...)" */
-static int find_space(dbl_linked_list_t *list)
+static int find_space(dbl_linked_list_t *list);
+static int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list);
 
+
+int main()
+{
+    printf("start\n");
+    dbl_linked_list_t test_list;
+    list_inicialisator (&test_list);
+    add_after (-1, 256, &test_list);
+
+    printf( "next %d    prev %d\n", test_list.nextArray[1], test_list.prevArray[1] );
+    add_after (0, 512, &test_list);
+    dump (test_list);
+
+    add_before (-1, 128, &test_list);
+    dump (test_list);
+
+    add_before (2, 64, &test_list);
+    dump (test_list);
+
+    add_before (-1, 32, &test_list);
+    add_after  (-1, 16, &test_list);
+    dump (test_list);
+
+    //add_before (-1, 64, &test_list);
+    printf("3data = %d=n", list_look(2, &test_list));
+    // printf ("value = %lld\n", test_list.dataArray[1] );
+    // printf ("333value = %lld\n", list_look(0, &test_list) );
+    // printf ("444value = %lld\n", list_look(1, &test_list) );
+    printf ("end\n");
+
+    return 0;
+}
 
 int list_inicialisator (dbl_linked_list_t *list)
 {
@@ -37,8 +63,8 @@ int list_inicialisator (dbl_linked_list_t *list)
     list->initialisated = true;
 
 
-                        /*The zeroth element is not filled, so the required size is one larger.*/
-    int64_t tmprPntr0 = (int64_t)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int64_t) );
+                      /*The zeroth element is not filled, so the required size is one larger.*/
+    int64_t* tmprPntr0 = (int64_t *)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int64_t) );
     if (tmprPntr0 == NULL)
     {
         printf("ERROR: no space in RAM to make new list.");
@@ -48,7 +74,7 @@ int list_inicialisator (dbl_linked_list_t *list)
 
 
                       /*The zeroth element is not filled, so the required size is one larger.*/
-    int tmprPntr1 = (int)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int) );
+    int *tmprPntr1 = (int *)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int) );
     if (tmprPntr1 == NULL)
     {
         printf ("ERROR: no space in RAM to make new list.");
@@ -60,7 +86,7 @@ int list_inicialisator (dbl_linked_list_t *list)
 
 
                       /*The zeroth element is not filled, so the required size is one larger.*/
-        tmprPntr1 = (int)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int) );
+         tmprPntr1 = (int *)calloc ( DATA_ARRAY_BASE_SIZE + 1, sizeof(int) );
     if (tmprPntr1 == NULL)
     {
         printf ("ERROR: no space in RAM to make new list.");
@@ -72,6 +98,7 @@ int list_inicialisator (dbl_linked_list_t *list)
     list->prevArray = tmprPntr1;
 
     list->capacity  = DATA_ARRAY_BASE_SIZE;
+    set_next_free_markers (0, DATA_ARRAY_BASE_SIZE, list);
 
     return 0;
 }
@@ -114,16 +141,20 @@ int add_after (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *list
     int targetNum   = 0;
     int freeSp      = 0;
 
-    if (  !(  right_list = CHECK_LIST(list, "add_after")  )  )  return right_list;
+    if (  (  right_list = CHECK_LIST(list, "add_after")  )  )
+    {
+        return right_list;
+    }
 
     if (targetNum_Users + 1> list->numOfElm)
     {
-        printf("ERROR: too large num argument in funck add_after");
+        printf("ERROR: too large num argument in funck add_after\n");
+        return 121231;  //Обязательно заменить на enum
     }
 
 
 
-    for (int i = 0; i < targetNum_Users; i ++)
+    for (int i = 0; i < targetNum_Users + 1; i ++)
     {
        targetNum = list->nextArray[targetNum];
     }
@@ -136,51 +167,97 @@ int add_after (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *list
         ;
     }
 
-    list->nextArray[targetNum]   = freeSp;
+     list->nextArray[targetNum]   = freeSp;
+    list->prevArray[freeSp]      = targetNum;
     list->prevArray[nexttargNum] = freeSp;
+    list->nextArray[freeSp]      = nexttargNum;
 
+    list->numOfElm ++;
     list->dataArray[freeSp]      = addingValue;
 
     return 0;
 }
 
-int CHECK_LIST(dbl_linked_list_t *list, const char const *funckName)
+int add_before (int targetNum_Users, int64_t addingValue, dbl_linked_list_t *list)
 {
-    int rightList = 1;
+    int right_list  = 0;
+    int prevTargNum = 0;
+    int targetNum   = 0;
+    int freeSp      = 0;
 
+    if (  (  right_list = CHECK_LIST(list, "add_before")  )  )
+    {
+        printf("stop");
+        return right_list;
+    }
+
+    if (targetNum_Users + 1  > list->numOfElm)
+    {
+        printf("ERROR: too large num argument in funck add_before\n");
+        return 121231;  //Обязательно заменить на enum
+    }
+
+
+
+    for (int i = 0; i < targetNum_Users + 1; i ++)
+    {
+       targetNum = list->nextArray[targetNum];
+    }
+    prevTargNum = list->prevArray[targetNum];
+
+    freeSp = find_space(list);
+    if (freeSp == 0)
+    {
+        // increase_space(list);
+        ;
+    }
+
+    list->nextArray[prevTargNum] = freeSp;
+    list->prevArray[freeSp]      = prevTargNum;
+    list->prevArray[targetNum]   = freeSp;
+    list->nextArray[freeSp]      = targetNum;
+
+    list->numOfElm ++;
+    list->dataArray[freeSp]      = addingValue;
+
+    return 0;
+}
+
+int CHECK_LIST (dbl_linked_list_t *list, const char *const funckName)
+{
     if (list == NULL )
     {
-        printf("Error: Null pointer to list in function %s", funckName);
+        printf("Error: Null pointer to list in function %s\n", funckName);
         return 1;
     }
 
     if (list->nextArray == NULL)
     {
-        printf("Error: Null pointer to next num Array in function %s", funckName);
+        printf("Error: Null pointer to next num Array in function %s\n", funckName);
         return 1;
     }
 
     if (list->dataArray == NULL)
     {
-        printf("Error: Null pointer to data Array in function %s", funckName);
+        printf("Error: Null pointer to data Array in function %s\n", funckName);
         return 1;
     }
 
     if (list->prevArray == NULL)
     {
-        printf("Error: Null pointer to prev num Array in function %s", funckName);
+        printf("Error: Null pointer to prev num Array in function %s\n", funckName);
         return 1;
     }
 
     if (list->numOfElm > list->capacity)
     {
-        printf("Error: Null list overflooat in function %s", funckName);
+        printf("Error: Null list overflooat in function %s\n", funckName);
         return 1;
     }
 
     if (list->initialisated == false)
     {
-        printf("Error: Null list not initialised in function %s", funckName);
+        printf("Error: Null list not initialised in function %s\n", funckName);
         return 1;
     }
 
@@ -193,11 +270,105 @@ int CHECK_LIST(dbl_linked_list_t *list, const char const *funckName)
 int find_space(dbl_linked_list_t *list)
 {
     int free = 1;
-    while (  (list->nextArray[free] != 0) && (list->prevArray[free] != 0)
-                      && (list->nextArray[0] != free) && (list->prevArray[0] != free)  )
+    while (  ( (list->nextArray[free] != 0) && (list->prevArray[free] != 0) )            ||
+                       ( (list->nextArray[0] == free) || (list->prevArray[0] == free) )      )
     {
-        free = list->nextArray[free];
+        free ++;
     }
 
     return free;
+}
+
+int64_t list_look (int targetNum_Users, dbl_linked_list_t *list)
+{
+    int right_list = 0;
+    int targetNum  = 0;
+
+    if (  (  right_list = CHECK_LIST(list, "list_look")  )  )  return right_list;
+
+    if (targetNum_Users + 1> list->numOfElm)
+    {
+        printf("ERROR: too large num argument in funck look\n");
+    }
+
+    for (int i = 0; i < targetNum_Users + 1; i ++)
+    {
+        targetNum = list->nextArray[targetNum];
+    }
+
+    return list->dataArray[targetNum];
+}
+
+void dump (dbl_linked_list_t list)
+{
+    printf("\nnum:  ");
+    for(int i = 0; i < list.capacity; i ++)
+    {
+        printf("%4d  ", i);
+    }
+
+    printf("\ndata: ");
+    for(int i = 0; i < list.capacity; i ++)
+    {
+        printf("%4d  ", list.dataArray[i]);
+    }
+
+    printf("\nnext: ");
+    for(int i = 0; i < list.capacity; i ++)
+    {
+        printf("%4d  ", list.nextArray[i]);
+    }
+
+    printf("\nprev: ");
+    for(int i = 0; i < list.capacity; i ++)
+    {
+        printf("%4d  ", list.prevArray[i]);
+    }
+
+    printf("\n\n");
+}
+
+int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
+{
+    int right_list = 0;
+    int targetNum  = 0;
+
+    if (  (  right_list = CHECK_LIST(list, "list_look")  )  )  return right_list;
+
+    if (targetNum_Users + 1> list->numOfElm)
+    {
+        printf("ERROR: too large num argument in funck look\n");
+    }
+
+    for (int i = 0; i < targetNum_Users + 1; i ++)
+    {
+        targetNum = list->nextArray[targetNum];
+    }
+
+    list->dataArray[targetNum] = 0;
+    list->numOfElm --;
+
+    list->nextArray[ list->prevArray[targetNum] ] = list->nextArray[targetNum];
+    list->prevArray[ list->nextArray[targetNum] ] = list->prevArray[targetNum];
+
+    list->prevArray[targetNum] = 0;
+    list->nextArray[targetNum] = 0;
+
+    return list->dataArray[targetNum];
+}
+
+/* !!!! ATTENTION: This function does not check the correctness of the list data. !!!!
+        This function is only for internal use.
+        Before use, check list with: "CHECK_LIST(list, ...)" */
+int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list)
+{
+
+    for(int i = startNum; i < endNum - 1; i ++)
+    {
+        list->nextArray[i] = (i + 1);
+    }
+
+    list->nextArray[endNum - 1] = LIST_FULL;
+
+    return 1;
 }
