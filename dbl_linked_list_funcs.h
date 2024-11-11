@@ -10,7 +10,7 @@ int     list_inicialiser    (dbl_linked_list_t *list);
 int64_t list_look           (int targetNum_Users, dbl_linked_list_t *list);
 void    dump                (dbl_linked_list_t list);
 int     list_get_true_num   (int targetNum_Users, dbl_linked_list_t *list);
-char *  generate_png (dbl_linked_list_t *list);
+char   *generate_png        (dbl_linked_list_t *list);
 
 
 

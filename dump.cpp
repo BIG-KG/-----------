@@ -21,51 +21,70 @@ char *generate_png (dbl_linked_list_t *list)
     sprintf (png_file,  "dump_picture%d.png", dumpNum);
     sprintf (html_file, "dump%d.html",        dumpNum);
 
-    FILE *input_file = fopen(txt_file, "w");
+    FILE *dot_file = fopen(txt_file, "w");
 
-    fprintf (input_file, "digraph G {\n\trankdir = LR\n");
-    printf("capasity = %d", list->capacity);
+    fprintf (dot_file, "digraph G {\n\trankdir = LR\n");
+    //printf("capasity = %d", list->capacity);
+
+    fprintf (dot_file, "\tfree_node [fillcolor = lightgreen, style=\"rounded, filled\" shape=Mrecord; label = \" FREE \"]; \n ");
+
     for (int i = 0; i <= list->capacity; i++)
     {
-        fprintf (input_file, "\tnode%d [shape=Mrecord; label = \"  %d | data = %d | next = %d | prev = %d  \"]; \n", i, i,
+        fprintf (dot_file, "\tnode%d [shape=Mrecord, style=\"rounded, filled\" label = \"  %d | data = %d | next = %d | prev = %d  \"]; \n", i, i,
                                                         list->array[i].data,
                                                         list->array[i].next,
                                                         list->array[i].prev );
     }
 
-    fprintf (input_file,"\n");
+    fprintf(dot_file, "\tnode0 [fillcolor=lightblue]\n", free);
+
+
+    fprintf (dot_file,"\n");
     int j = list->array[0].next;
-    fprintf (input_file, "\tnode%d ->node%d [ weight=0; color=blue; ]\n", 0, j);
+    fprintf (dot_file, "\tnode%d ->node%d [ weight=100, color=white ];\n", 0, j);
     while (j != 0)
     {
-        fprintf(input_file, "\tnode%d ->node%d [ weight=0; color=blue; ]\n", j, list->array[j].next);
+        fprintf(dot_file, "\tnode%d ->node%d [ weight=100, color=white ];\n", j, list->array[j].next);
         j = list->array[j].next;
     }
 
 
-    fprintf (input_file,"\n");
+    fprintf (dot_file,"\n");
+    j = list->array[0].next;
+    fprintf (dot_file, "\tnode%d ->node%d [ weight=0, color=blue ];\n", 0, j);
+    while (j != 0)
+    {
+        fprintf(dot_file, "\tnode%d ->node%d [ weight=0, color=blue ];\n", j, list->array[j].next);
+        j = list->array[j].next;
+    }
+
+
+    fprintf (dot_file,"\n");
     int k = list->array[0].prev;
-    fprintf (input_file, "\tnode%d ->node%d [ weight=0; color=red; ]\n", 0, k);
+    fprintf (dot_file, "\tnode%d ->node%d [ weight=0, color=red ];\n", 0, k);
     while (k != 0)
     {
-        fprintf(input_file, "\tnode%d ->node%d [ weight=0; color=\"red\"]\n", k, list->array[k].prev);
+        fprintf(dot_file, "\tnode%d ->node%d [ weight=0, color=red];\n", k, list->array[k].prev);
         k = list->array[k].prev;
     }
 
 
-    fprintf (input_file,"\n");
+    //fprintf (dot_file,"\n\tedge[color=green]\n");
     int free = list->firstFreeCell;
+    fprintf(dot_file, "\tnode%d[fillcolor=lightgreen]\n", free);
+    fprintf (dot_file, "\tfree_node -> node%d  [weight=0]\n", free);
     while( list->array[free].next != -1)
     {
-        fprintf(input_file, "\tnode%d ->node%d [ weight=0; color=blue; ]\n", free, list->array[free].next);
+        fprintf(dot_file, "\tnode%d[fillcolor=lightgreen]\n", list->array[free].next);
+        fprintf(dot_file, "\tnode%d ->node%d [weight=0]\n", free, list->array[free].next);
         free = list->array[free].next;
     }
 
 
 
-    fprintf(input_file, "}");
+    fprintf(dot_file, "}");
 
-    fclose(input_file);
+    fclose(dot_file);
     char cmd_command[128] = "";
     sprintf (cmd_command, "dot -Tpng %s -o %s", txt_file, png_file);
 
@@ -78,13 +97,13 @@ char *generate_png (dbl_linked_list_t *list)
 
 int generate_html(dbl_linked_list_t *list, char *picture_name, char *html_file)
 {
-    FILE *input_file = fopen(html_file, "w");
+    FILE *output_file = fopen(html_file, "w");
 
-    text_dump(list, input_file);
+    text_dump(list, output_file);
 
-    fprintf(input_file, "<img src=\"C:/MIPT/dbl_linked_list/%s\">", picture_name);
+    fprintf(output_file, "<img src=\"C:/MIPT/dbl_linked_list/%s\">", picture_name);
 
-    fclose(input_file);
+    fclose(output_file);
 
 }
 

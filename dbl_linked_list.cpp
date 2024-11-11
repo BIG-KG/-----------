@@ -15,7 +15,6 @@
 static int find_space(dbl_linked_list_t *list);
 static int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list);
 
-
 int list_inicialiser (dbl_linked_list_t *list)
 {
     if (!list)
