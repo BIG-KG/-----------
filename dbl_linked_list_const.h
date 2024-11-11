@@ -8,14 +8,19 @@ enum errors{
     DOUBLE_INICIALISE_LIST = -3
 };
 
+struct node_t
+{
+    int64_t data = 0;
+    int     next = 0;
+    int     prev = 0;
+
+};
 
 struct dbl_linked_list_t
 {
     bool     initialisated  = false;
     int      numOfElm       = 0;
-    int64_t *dataArray      = NULL;
-    int     *nextArray      = NULL;
-    int     *prevArray      = NULL;
+    node_t  *array          = NULL;
     int      capacity       = 0;
     int      firstFreeCell  = LIST_FULL; //
 };
