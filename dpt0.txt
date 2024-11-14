@@ -1,0 +1,44 @@
+digraph G {
+	rankdir = LR
+	free_node [fillcolor = lightgreen, style="rounded, filled" shape=Mrecord; label = " FREE "];
+ 	node0 [shape=Mrecord, style="rounded, filled" label = "  0 | data = 0 | next = 6 | prev = 4  "];
+	node1 [shape=Mrecord, style="rounded, filled" label = "  1 | data = 256 | next = 3 | prev = 2  "];
+	node2 [shape=Mrecord, style="rounded, filled" label = "  2 | data = 512 | next = 1 | prev = 6  "];
+	node3 [shape=Mrecord, style="rounded, filled" label = "  3 | data = 128 | next = 5 | prev = 1  "];
+	node4 [shape=Mrecord, style="rounded, filled" label = "  4 | data = 8 | next = 0 | prev = 5  "];
+	node5 [shape=Mrecord, style="rounded, filled" label = "  5 | data = 32 | next = 4 | prev = 3  "];
+	node6 [shape=Mrecord, style="rounded, filled" label = "  6 | data = 16 | next = 2 | prev = 0  "];
+	node7 [shape=Mrecord, style="rounded, filled" label = "  7 | data = 0 | next = 8 | prev = 0  "];
+	node8 [shape=Mrecord, style="rounded, filled" label = "  8 | data = 0 | next = -1 | prev = 0  "];
+	node0 [fillcolor=lightblue]
+
+	node0 ->node1 [ weight=1000, style=invis ];
+	node1 ->node2 [ weight=1000, style=invis ];
+	node2 ->node3 [ weight=1000, style=invis ];
+	node3 ->node4 [ weight=1000, style=invis ];
+	node4 ->node5 [ weight=1000, style=invis ];
+	node5 ->node6 [ weight=1000, style=invis ];
+	node6 ->node7 [ weight=1000, style=invis ];
+	node7 ->node8 [ weight=1000, style=invis ];
+	node8 ->node9 [ weight=1000, style=invis ];
+
+	node0 ->node6 [ weight=0, color=blue ];
+	node6 ->node2 [ weight=0, color=blue ];
+	node2 ->node1 [ weight=0, color=blue ];
+	node1 ->node3 [ weight=0, color=blue ];
+	node3 ->node5 [ weight=0, color=blue ];
+	node5 ->node4 [ weight=0, color=blue ];
+	node4 ->node0 [ weight=0, color=blue ];
+
+	node0 ->node4 [ weight=0, color=red];
+	node4 ->node5 [ weight=0, color=red];
+	node5 ->node3 [ weight=0, color=red];
+	node3 ->node1 [ weight=0, color=red];
+	node1 ->node2 [ weight=0, color=red];
+	node2 ->node6 [ weight=0, color=red];
+	node6 ->node0 [ weight=0, color=red];
+	node7[fillcolor=lightgreen]
+	free_node -> node7  [ weight=0, weight=0]
+	node8[fillcolor=lightgreen]
+	node7 ->node8 [weight=0]
+}

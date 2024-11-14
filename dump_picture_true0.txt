@@ -1,0 +1,24 @@
+digraph G {
+	rankdir = LR; 
+	 splines=spline; 
+	 nodesep=1; 
+	 ranksep=1.2; 
+	free_node [fillcolor = lightgreen, style="rounded, filled" shape=Mrecord; label = " FREE "]; 
+ 	node0 [shape=Mrecord, style="rounded, filled" label = "  0 | data = 0 | next = 2 | prev = 3  "]; 
+	node1 [shape=Mrecord, style="rounded, filled" label = "  1 | data = 256 | next = 3 | prev = 2  "]; 
+	node2 [shape=Mrecord, style="rounded, filled" label = "  2 | data = 512 | next = 1 | prev = 0  "]; 
+	node3 [shape=Mrecord, style="rounded, filled" label = "  3 | data = 128 | next = 0 | prev = 1  "]; 
+	node4 [shape=Mrecord, style="rounded, filled" label = "  4 | data = 0 | next = -1 | prev = 0  "]; 
+	node0 [fillcolor=lightblue]
+
+	node0 ->node1 [ color=white ];
+	node1 ->node2 [ color=white ];
+	node2 ->node3 [ color=white ];
+	node3 ->node4 [ color=white ];
+
+	node0 ->node2 [ constraint=false, color=green, dir=both, arrowtail=crow ];
+	node2 ->node1 [ constraint=false, color=green, dir=both, arrowtail=crow ];
+	node1 ->node3 [ constraint=false, color=green, dir=both, arrowtail=crow ];
+	node3 ->node0 [ constraint=false, color=green, dir=both, arrowtail=crow ];
+	node4[fillcolor=lightgreen]
+}

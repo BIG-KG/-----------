@@ -3,8 +3,8 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "dbl_linked_list_const.h"
-#include "dbl_linked_list_funcs.h"
+#include "..\\headers\dbl_linked_list_const.h"
+#include "..\\headers\dbl_linked_list_funcs.h"
 
 
 
@@ -15,6 +15,7 @@
 static int find_space(dbl_linked_list_t *list);
 static int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *list);
 
+// initializer
 int list_inicialiser (dbl_linked_list_t *list)
 {
     if (!list)
@@ -42,7 +43,7 @@ int list_inicialiser (dbl_linked_list_t *list)
 
 
     list->capacity  = DATA_ARRAY_BASE_SIZE;
-    set_next_free_markers (1, DATA_ARRAY_BASE_SIZE, list);
+    set_next_free_markers (1, DATA_ARRAY_BASE_SIZE + 1, list);
     list->firstFreeCell = 1;
 
     return 0;
@@ -71,14 +72,10 @@ int list_destructor (dbl_linked_list_t *list)
 
 int add_after (int targetNum, int64_t addingValue, dbl_linked_list_t *list)
 {
-    int right_list  = 0;
     int nexttargNum = 0;
     int freeSp      = 0;
 
-    if (  (  right_list = CHECK_LIST(list, "add_after")  )  )
-    {
-        return right_list;
-    }
+    CHECK_LIST(list, "add_after");
 
     if (targetNum >= list->capacity)
     {
@@ -96,9 +93,9 @@ int add_after (int targetNum, int64_t addingValue, dbl_linked_list_t *list)
 
     nexttargNum  = list->array[targetNum].next;
 
-    list->array[targetNum  ].next  = freeSp;
-    list->array[freeSp     ].prev  = targetNum;
-    list->array[nexttargNum].prev  = freeSp;
+    list->array[targetNum  ].next  = freeSp     ;
+    list->array[freeSp     ].prev  = targetNum  ;
+    list->array[nexttargNum].prev  = freeSp     ;
     list->array[freeSp     ].next  = nexttargNum;
 
     list->numOfElm ++;
@@ -109,15 +106,10 @@ int add_after (int targetNum, int64_t addingValue, dbl_linked_list_t *list)
 
 int add_before (int targetNum, int64_t addingValue, dbl_linked_list_t *list)
 {
-    int right_list  = 0;
     int prevTargNum = 0;
     int freeSp      = 0;
 
-    if (  (  right_list = CHECK_LIST(list, "add_before")  )  )
-    {
-        printf("stop");
-        return right_list;
-    }
+    CHECK_LIST(list, "add_before");
 
     if (targetNum + 1  > list->numOfElm)
     {
@@ -136,45 +128,45 @@ int add_before (int targetNum, int64_t addingValue, dbl_linked_list_t *list)
     }
 
 
-    list->array[prevTargNum].next = freeSp;
+    list->array[prevTargNum].next = freeSp     ;
     list->array[freeSp     ].prev = prevTargNum;
-    list->array[targetNum  ].prev = freeSp;
-    list->array[freeSp     ].next = targetNum;
+    list->array[targetNum  ].prev = freeSp     ;
+    list->array[freeSp     ].next = targetNum  ;
 
-    list->numOfElm ++;
+    list->numOfElm ++                          ;
     list->array[freeSp     ].data = addingValue;
 
     return 0;
 }
 
-int CHECK_LIST (dbl_linked_list_t *list, const char *const funckName)
-{
-    if (list == NULL )
-    {
-        printf("Error: Null pointer to list in function %s\n", funckName);
-        return 1;
-    }
-
-    if (list->array == NULL)
-    {
-        printf("Error: Null pointer to next num Array in function %s\n", funckName);
-        return 1;
-    }
-
-    if (list->numOfElm > list->capacity)
-    {
-        printf("Error: List overflooat in function %s\n", funckName);
-        return 1;
-    }
-
-    if (list->initialisated == false)
-    {
-        printf("Error: List not initialised in function %s\n", funckName);
-        return 1;
-    }
-
-    return 0;
-}
+// int CHECK_LIST (dbl_linked_list_t *list, const char *const funckName)
+// {
+//     if (list == NULL )
+//     {
+//         printf("Error: Null pointer to list in function %s\n", funckName);
+//         return 1;
+//     }
+//
+//     if (list->array == NULL)
+//     {
+//         printf("Error: Null pointer to next num Array in function %s\n", funckName);
+//         return 1;
+//     }
+//
+//     if (list->numOfElm > list->capacity)
+//     {
+//         printf("Error: List overflooat in function %s\n", funckName);
+//         return 1;
+//     }
+//
+//     if (list->initialisated == false)
+//     {
+//         printf("Error: List not initialised in function %s\n", funckName);
+//         return 1;
+//     }
+//
+//     return 0;
+// }
 
 /* !!!! ATTENTION: This function does not check the correctness of the list data. !!!!
         This function is only for internal use.
@@ -207,10 +199,9 @@ static int find_space(dbl_linked_list_t *list)
 
 int64_t list_look (int targetNum_Users, dbl_linked_list_t *list)
 {
-    int right_list = 0;
     int targetNum  = 0;
 
-    if (  (  right_list = CHECK_LIST(list, "list_look")  )  )  return right_list;
+    CHECK_LIST(list, "list_look");
 
     if (targetNum_Users + 1> list->numOfElm)
     {
@@ -225,28 +216,28 @@ int64_t list_look (int targetNum_Users, dbl_linked_list_t *list)
     return list->array[targetNum].data;
 }
 
-void dump (dbl_linked_list_t list)
+void consol_dump (dbl_linked_list_t list)
 {
     printf("\nnum:  ");
-    for(int i = 0; i < list.capacity; i ++)
+    for(int i = 0; i <= list.capacity; i ++)
     {
         printf("%4d  ", i);
     }
 
     printf("\ndata: ");
-    for(int i = 0; i < list.capacity; i ++)
+    for(int i = 0; i <= list.capacity; i ++)
     {
         printf("%4d  ", list.array[i].data);
     }
 
     printf("\nnext: ");
-    for(int i = 0; i < list.capacity; i ++)
+    for(int i = 0; i <= list.capacity; i ++)
     {
         printf("%4d  ", list.array[i].next);
     }
 
     printf("\nprev: ");
-    for(int i = 0; i < list.capacity; i ++)
+    for(int i = 0; i <= list.capacity; i ++)
     {
         printf("%4d  ", list.array[i].prev);
     }
@@ -256,10 +247,9 @@ void dump (dbl_linked_list_t list)
 
 int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
 {
-    int right_list = 0;
-    int targetNum  = 0;
+    int targetNum = 0;
 
-    if (  (  right_list = CHECK_LIST(list, "list_look")  )  )  return right_list;
+    CHECK_LIST(list, "list_look");
 
     if (targetNum_Users + 1> list->numOfElm)
     {
@@ -273,7 +263,7 @@ int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
     }
 
     list->array[targetNum].data = 0;
-    list->numOfElm --;
+    list->numOfElm --              ;
 
     list->array[ list->array[targetNum].prev ].next = list->array[targetNum].next;
     list->array[ list->array[targetNum].next ].prev = list->array[targetNum].prev;
@@ -282,7 +272,7 @@ int64_t list_delete_element (int targetNum_Users, dbl_linked_list_t *list)
     list->array[targetNum].next = 0;
 
     list->array[targetNum].next = list->firstFreeCell;
-    list->firstFreeCell = targetNum;
+    list->firstFreeCell = targetNum                  ;
 
     return 0;
 }
@@ -309,7 +299,7 @@ static int set_next_free_markers (int startNum, int endNum, dbl_linked_list_t *l
 int list_get_true_num (int targetNum_Users, dbl_linked_list_t *list)
 {
     int targetNum = 0;
-    if (  ( CHECK_LIST(list, "list_look")  )  )  return NULL;
+    CHECK_LIST(list, "list_look");
 
     if (targetNum_Users + 1> list->numOfElm)
     {

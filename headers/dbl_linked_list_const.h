@@ -18,7 +18,7 @@ struct node_t
 
 struct dbl_linked_list_t
 {
-    bool     initialisated  = false;
+    bool     initialisated  = false; // remove on release
     int      numOfElm       = 0;
     node_t  *array          = NULL;
     int      capacity       = 0;
